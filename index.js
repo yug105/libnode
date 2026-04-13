@@ -18,6 +18,9 @@ switch (process.platform) {
   case "win32":
     current_os = "win";
     break;
+  case "freebsd":
+    current_os = "freebsd";
+    break;
   default:
     current_os = "linux";
     break;
@@ -69,5 +72,6 @@ if (process.platform == "win32") {
     OS,
     ...extraArgs,
   ]);
-  await spawnAsync("make", [`-j${threadCount}`]);
+  const make = process.platform === "freebsd" ? "gmake" : "make";
+  await spawnAsync(make, [`-j${threadCount}`]);
 }

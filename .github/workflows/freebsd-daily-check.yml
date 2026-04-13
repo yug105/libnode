@@ -1,0 +1,45 @@
+name: FreeBSD Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-freebsd-amd64:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build on FreeBSD
+        uses: cross-platform-actions/action@v0.32.0
+        with:
+          operating_system: freebsd
+          version: '14.2'
+          architecture: x86-64
+          shell: sh
+          run: |
+            sudo pkg install -y node22 python3 gmake git
+            VERSION=$(cat version.txt)
+            git clone --branch "$VERSION" --depth=1 https://github.com/nodejs/node.git
+            sed -i '' '/ASSERT_TRIVIALLY_COPYABLE(T);/d' node/deps/v8/src/base/small-vector.h
+            CC=cc CXX=c++ ARCH=amd64 node index.js
+            cp node/out/Release/obj.target/libnode.so.* node/out/Release/
+            cd node/out/Release
+            SOFILE=$(ls libnode.so.* | head -n1)
+            ln -sf "$SOFILE" libnode.so
+            cd -
+            tar -cJf libnode-amd64-freebsd.tar.xz -C node/out/Release \
+              libnode.so libnode.so.* node
+
+      - name: Upload Release Asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: libnode-amd64-freebsd.tar.xz
+          asset_name: libnode-amd64-freebsd.tar.xz
+          tag: ${{ github.ref }}
+          overwrite: true
