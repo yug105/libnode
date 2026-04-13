@@ -23,11 +23,11 @@ jobs:
           architecture: x86-64
           shell: sh
           run: |
-            sudo pkg install -y node22 python3 gmake git llvm19
+            sudo pkg install -y node22 python3 gmake git
             VERSION=v22.22.2
             git clone --branch "$VERSION" --depth=1 https://github.com/nodejs/node.git
             sed -i '' '/ASSERT_TRIVIALLY_COPYABLE(T);/d' node/deps/v8/src/base/small-vector.h
-            CC=/usr/local/llvm19/bin/clang CXX=/usr/local/llvm19/bin/clang++ ARCH=amd64 node index.js
+            CC=cc CXX=c++ ARCH=amd64 node index.js
             cp node/out/Release/obj.target/libnode.so.* node/out/Release/
             cd node/out/Release
             SOFILE=$(ls libnode.so.* | head -n1)
