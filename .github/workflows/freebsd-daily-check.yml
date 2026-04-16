@@ -23,9 +23,11 @@ jobs:
           architecture: x86-64
           shell: sh
           run: |
-            sudo pkg install -y node22 python3 gmake git
+            sudo pkg install -y node22 python3 gmake
             VERSION=v22.22.2
-            git clone --branch "$VERSION" --depth=1 https://github.com/nodejs/node.git
+            fetch -o node-${VERSION}.tar.gz https://nodejs.org/dist/${VERSION}/node-${VERSION}.tar.gz
+            tar xzf node-${VERSION}.tar.gz
+            mv node-${VERSION} node
             sed -i '' '/ASSERT_TRIVIALLY_COPYABLE(T);/d' node/deps/v8/src/base/small-vector.h
             CC=cc CXX=c++ ARCH=amd64 node index.js
             cp node/out/Release/obj.target/libnode.so.* node/out/Release/
